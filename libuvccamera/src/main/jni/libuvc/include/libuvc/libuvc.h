@@ -105,6 +105,7 @@ enum uvc_frame_format {
 	UVC_FRAME_FORMAT_MJPEG,
 	UVC_FRAME_FORMAT_GRAY8,
 	UVC_FRAME_FORMAT_BY8,
+	UVC_FRAME_FORMAT_GRAY16,
 	/** Number of formats understood */
 	UVC_FRAME_FORMAT_COUNT,
 };
@@ -122,6 +123,7 @@ enum uvc_frame_format {
 #define UVC_COLOR_FORMAT_RGBX UVC_FRAME_FORMAT_RGBX		// XXX
 #define UVC_COLOR_FORMAT_MJPEG UVC_FRAME_FORMAT_MJPEG
 #define UVC_COLOR_FORMAT_GRAY8 UVC_FRAME_FORMAT_GRAY8
+#define UVC_COLOR_FORMAT_GRAY16 UVC_FRAME_FORMAT_GRAY16
 
 /** VideoStreaming interface descriptor subtype (A.6) */
 enum uvc_vs_desc_subtype {
@@ -792,6 +794,7 @@ uvc_error_t uvc_uyvy2rgb(uvc_frame_t *in, uvc_frame_t *out);
 uvc_error_t uvc_any2rgb(uvc_frame_t *in, uvc_frame_t *out);
 //----------------------------------------------------------------------
 uvc_error_t uvc_yuyv2bgr(uvc_frame_t *in, uvc_frame_t *out);
+uvc_error_t uvc_yuyv2y(uvc_frame_t *in, uvc_frame_t *out);
 uvc_error_t uvc_uyvy2bgr(uvc_frame_t *in, uvc_frame_t *out);
 uvc_error_t uvc_any2bgr(uvc_frame_t *in, uvc_frame_t *out);
 

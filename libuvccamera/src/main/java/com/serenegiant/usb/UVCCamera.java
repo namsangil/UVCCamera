@@ -206,7 +206,28 @@ public class UVCCamera {
     	if (mNativePtr != 0 && TextUtils.isEmpty(mSupportedSize)) {
     		mSupportedSize = nativeGetSupportedSize(mNativePtr);
     	}
-		nativeSetPreviewSize(mNativePtr, DEFAULT_PREVIEW_WIDTH, DEFAULT_PREVIEW_HEIGHT,
+
+		List<Size> supportedSizes = null;
+    	if(mCtrlBlock.getProductName().equals("ThermoCam160")){		// thermoCam160인 경우 type을 4로 하여 사이즈를 가져온다.
+			mCurrentFrameFormat = 12;
+			supportedSizes = UVCCamera.getSupportedSize(4, mSupportedSize);
+		}
+    	else {
+    		supportedSizes = getSupportedSizeList();
+		}
+
+
+    	int width = DEFAULT_PREVIEW_WIDTH;
+    	int height = DEFAULT_PREVIEW_HEIGHT;
+
+    	if(0 < supportedSizes.size()){
+    		width = supportedSizes.get(0).width;
+    		height = supportedSizes.get(0).height;
+    		mCurrentWidth = width;
+    		mCurrentHeight = height;
+		}
+
+		nativeSetPreviewSize(mNativePtr, width, height,
 			DEFAULT_PREVIEW_MIN_FPS, DEFAULT_PREVIEW_MAX_FPS, DEFAULT_PREVIEW_MODE, DEFAULT_BANDWIDTH);
     }
 
@@ -279,7 +300,7 @@ public class UVCCamera {
 		}
 		return result;
 	}
-	
+
 	/**
 	 * Set preview size and preview mode
 	 * @param width
@@ -298,7 +319,7 @@ public class UVCCamera {
 	public void setPreviewSize(final int width, final int height, final int frameFormat) {
 		setPreviewSize(width, height, DEFAULT_PREVIEW_MIN_FPS, DEFAULT_PREVIEW_MAX_FPS, frameFormat, mCurrentBandwidthFactor);
 	}
-	
+
 	/**
 	 * Set preview size and preview mode
 	 * @param width
@@ -320,15 +341,13 @@ public class UVCCamera {
 	 * @param bandwidthFactor
 	 */
 	public void setPreviewSize(final int width, final int height, final int min_fps, final int max_fps, final int frameFormat, final float bandwidthFactor) {
-		if ((width == 0) || (height == 0))
+
+		if ((mCurrentWidth == 0) || (mCurrentHeight == 0))
 			throw new IllegalArgumentException("invalid preview size");
 		if (mNativePtr != 0) {
-			final int result = nativeSetPreviewSize(mNativePtr, width, height, min_fps, max_fps, frameFormat, bandwidthFactor);
+			final int result = nativeSetPreviewSize(mNativePtr, mCurrentWidth, mCurrentHeight, min_fps, max_fps, mCurrentFrameFormat, bandwidthFactor);
 			if (result != 0)
 				throw new IllegalArgumentException("Failed to set preview size");
-			mCurrentFrameFormat = frameFormat;
-			mCurrentWidth = width;
-			mCurrentHeight = height;
 			mCurrentBandwidthFactor = bandwidthFactor;
 		}
 	}
