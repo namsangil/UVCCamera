@@ -1331,6 +1331,8 @@ uvc_error_t uvc_any2rgbx(uvc_frame_t *in, uvc_frame_t *out) {
 		return uvc_duplicate_frame(in, out);
 	case UVC_FRAME_FORMAT_RGB:
 		return uvc_rgb2rgbx(in, out);
+	case UVC_FRAME_FORMAT_GRAY16:
+		return uvc_rgb2rgbx(in, out);
 	default:
 		return UVC_ERROR_NOT_SUPPORTED;
 	}
