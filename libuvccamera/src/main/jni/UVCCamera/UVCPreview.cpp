@@ -266,6 +266,50 @@ int UVCPreview::setFrameCallback(JNIEnv *env, jobject frame_callback_obj, int pi
 	RETURN(0, int);
 }
 
+int UVCPreview::setPreviewFrameCallback(JNIEnv *env, jobject frame_callback_obj, int pixel_format) {
+	
+	ENTER();
+	pthread_mutex_lock(&capture_mutex);
+	{
+		if (isRunning() && isCapturing()) {
+			mIsCapturing = false;
+			if (mPreviewFrameCallbackObj) {
+				pthread_cond_signal(&capture_sync);
+				pthread_cond_wait(&capture_sync, &capture_mutex);	// wait finishing capturing
+			}
+		}
+		if (!env->IsSameObject(mPreviewFrameCallbackObj, frame_callback_obj))	{
+			iframecallback_fields.onFrame = NULL;
+			if (mPreviewFrameCallbackObj) {
+				env->DeleteGlobalRef(mPreviewFrameCallbackObj);
+			}
+			mPreviewFrameCallbackObj = frame_callback_obj;
+			if (frame_callback_obj) {
+				// get method IDs of Java object for callback
+				jclass clazz = env->GetObjectClass(frame_callback_obj);
+				if (LIKELY(clazz)) {
+					iframecallback_fields.onFrame = env->GetMethodID(clazz,
+						"onFrame",	"(Ljava/nio/ByteBuffer;)V");
+				} else {
+					LOGW("failed to get object class");
+				}
+				env->ExceptionClear();
+				if (!iframecallback_fields.onFrame) {
+					LOGE("Can't find IFrameCallback#onFrame");
+					env->DeleteGlobalRef(frame_callback_obj);
+					mPreviewFrameCallbackObj = frame_callback_obj = NULL;
+				}
+			}
+		}
+		if (frame_callback_obj) {
+			mPixelFormat = pixel_format;
+			callbackPixelFormatChanged();
+		}
+	}
+	pthread_mutex_unlock(&capture_mutex);
+	RETURN(0, int);
+}
+
 void UVCPreview::callbackPixelFormatChanged() {
 	mFrameCallbackFunc = NULL;
 	const size_t sz = requestWidth * requestHeight;
@@ -714,14 +758,14 @@ uvc_frame_t *UVCPreview::draw_preview_one(uvc_frame_t *frame, ANativeWindow **wi
 }
 
 int UVCPreview::processPreviewCallback(uvc_frame_t *frame) {
-    if (mFrameCallbackObj) {
+    if (mPreviewFrameCallbackObj) {
         JavaVM *vm = getVM();
         JNIEnv *env;
         // attach to JavaVM
         vm->AttachCurrentThread(&env, NULL);
 
         jobject buf = env->NewDirectByteBuffer(frame->data, callbackPixelBytes);
-        env->CallVoidMethod(mFrameCallbackObj, iframecallback_fields.onFrame, buf);
+        env->CallVoidMethod(mPreviewFrameCallbackObj, iframecallback_fields.onFrame, buf);
         env->ExceptionClear();
         env->DeleteLocalRef(buf);
 

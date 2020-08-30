@@ -78,6 +78,7 @@ private:
 	pthread_cond_t capture_sync;
 	uvc_frame_t *captureQueu;			// keep latest frame
 	jobject mFrameCallbackObj;
+	jobject mPreviewFrameCallbackObj;
 	convFunc_t mFrameCallbackFunc;
 	Fields_iframecallback iframecallback_fields;
 	int mPixelFormat;
@@ -118,6 +119,7 @@ public:
 	int setPreviewSize(int width, int height, int min_fps, int max_fps, int mode, float bandwidth = 1.0f);
 	int setPreviewDisplay(ANativeWindow *preview_window);
 	int setFrameCallback(JNIEnv *env, jobject frame_callback_obj, int pixel_format);
+	int setPreviewFrameCallback(JNIEnv *env, jobject frame_callback_obj, int pixel_format);
 	int startPreview();
 	int stopPreview();
 	inline const bool isCapturing() const;
