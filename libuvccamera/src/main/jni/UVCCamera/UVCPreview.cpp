@@ -576,7 +576,7 @@ void UVCPreview::do_preview(uvc_stream_ctrl_t *ctrl) {
                 for ( ; LIKELY(isRunning()) ; ) {
                     frame = waitPreviewFrame();
                     if (LIKELY(frame)) {
-                        frame = draw_preview_one(frame, &mPreviewWindow, uvc_any2rgbx, 2);
+                        frame = draw_preview_one(frame, &mPreviewWindow, NULL, 2);
                         addCaptureFrame(frame);
                     }
                 }
